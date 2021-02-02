@@ -8,7 +8,8 @@ output:
 
 
 ## Loading and preprocessing the data
-```{r}
+
+```r
 # library("knitr")
 library("data.table")
 library("ggplot2")
@@ -22,11 +23,19 @@ data    <- data[which(data$steps!=0),]
 ```
 
 ## What is mean total number of steps taken per day?
-```{r}
+
+```r
 #Calculate the total number of steps per day
 dayTotals <-  aggregate(steps ~ date, data, sum)
 nDays     <-  difftime(tail(data$date, n=1), head(data$date, n=1))
 toString(as.integer(nDays)) #58 days
+```
+
+```
+## [1] "58"
+```
+
+```r
 #histogram of total number of steps taken per day
 hist(dayTotals$steps,main="Total Daily Steps",xlab="Number of Steps",breaks=48)
 #calculate mean and meadian of total number of steps taken per day
@@ -35,12 +44,23 @@ medianSteps <-  median(dayTotals$steps)   #10765
 print<-as.data.frame(list(as.integer(meanSteps),as.integer(medianSteps)))
 colnames(print)<-list("|Mean # of steps|","|Median # of steps|")
 print
+```
+
+```
+##   |Mean # of steps| |Median # of steps|
+## 1             10766               10765
+```
+
+```r
 abline(v=meanSteps,col='red')
 abline(v=medianSteps,col='blue')
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+
 ## What is the average daily activity pattern?
-```{r}
+
+```r
 intervalMeans <-  data[, c(lapply(.SD, mean, na.rm = TRUE)), .SDcols = c("steps"), by = .(interval)] 
 intervalMeans <-  intervalMeans[order(interval)]
 #line plot of Steps by Time of Day
@@ -49,15 +69,33 @@ plot(intervalMeans$interval,intervalMeans$steps,type='l',main="Steps by Time of 
 #max steps in an avg interval
 intervalMeans <-  intervalMeans[order(steps)]
 tail(intervalMeans,n=1) #835
+```
+
+```
+##    interval    steps
+## 1:      835 352.4839
+```
+
+```r
 abline(v=835,col='blue')
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
 ## Imputing missing values
-```{r}
+
+```r
 #calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
 NAdata  <- uglyData
 NAdata  <- NAdata[which(is.na(NAdata$steps)),]
 nrow(NAdata[is.na(steps),]) #2304
+```
+
+```
+## [1] 2304
+```
+
+```r
 #filling in all of the missing values in the dataset
 NAdat <-NAdata[,2:3]
 NAdat <- merge(intervalMeans,NAdat)
@@ -65,6 +103,13 @@ NAdat <- merge(intervalMeans,NAdat)
 AproxData <- rbind(NAdat, data)
 nDays     <-  difftime(tail(AproxData$date, n=1), head(AproxData$date, n=1))
 toString(as.integer(nDays)) #59 days
+```
+
+```
+## [1] "59"
+```
+
+```r
 #histogram of total number of steps taken per day
 dayTotals <-  aggregate(steps ~ date, AproxData, sum)
 hist(dayTotals$steps,main="Total Daily Steps",xlab="Number of Steps",breaks=48)
@@ -76,14 +121,25 @@ medianSteps <-  median(dayTotals$steps) #11458
 print<-as.data.frame(list(as.integer(oldMean),as.integer(meanSteps),as.integer(medianSteps)))
 colnames(print)<-list("|Old Mean|","|Mean # of steps|","|Median # of steps|")
 print
+```
+
+```
+##   |Old Mean| |Mean # of steps| |Median # of steps|
+## 1      10766             13162               11458
+```
+
+```r
 abline(v=meanSteps,col='red')
 abline(v=medianSteps,col='blue')
 abline(v=oldMean,col='grey')
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
 
 ## Are there differences in activity patterns between weekdays and weekends?
-```{r}
+
+```r
 data    <- uglyData
 data    <- data[which(data$steps!=0),]
 #Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
@@ -99,3 +155,5 @@ ggplot(intervalMeans , aes(x = interval , y = steps, color=`dayOrEnd`)) + geom_l
   facet_wrap(~`dayOrEnd` , ncol = 1, nrow=2) +
   theme(legend.position="none")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
